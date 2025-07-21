@@ -22,7 +22,7 @@ const Admin = require('./Admin');
 const bcrypt = require('bcryptjs');
 
 // إضافة حجز جديد
-app.post('/api/bookings', async (req, res) => {
+app.post(/^\/api\/bookings\/?$/, async (req, res) => {
   try {
     const { name, mobile, branch, service, date, time } = req.body;
     // تحقق من عدم وجود حجز لنفس اليوم والميعاد
@@ -39,7 +39,7 @@ app.post('/api/bookings', async (req, res) => {
 });
 
 // جلب كل الحجوزات
-app.get('/api/bookings', async (req, res) => {
+app.get(/^\/api\/bookings\/?$/, async (req, res) => {
   try {
     const bookings = await Booking.find().sort({ createdAt: -1 });
     res.json(bookings);
