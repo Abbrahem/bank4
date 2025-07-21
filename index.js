@@ -69,6 +69,13 @@ app.post('/api/admin/login', async (req, res) => {
   res.json({ message: 'تم تسجيل الدخول بنجاح' });
 });
 
+// كود تشخيصي لأي طلب غير مدعوم على /api/bookings
+app.all('/api/bookings*', (req, res, next) => {
+  if (['GET', 'POST', 'OPTIONS'].includes(req.method)) return next();
+  console.log('405 Method Not Allowed:', req.method, req.originalUrl);
+  res.status(405).json({ message: 'Method Not Allowed', method: req.method, url: req.originalUrl });
+});
+
 app.options('*', (req, res) => {
   res.sendStatus(200);
 });
