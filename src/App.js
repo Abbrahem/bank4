@@ -10,52 +10,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import 'animate.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-// مكون حالة المستخدم في الـ Navbar
-function UserStatus() {
-  const [user, setUser] = React.useState(null);
-  React.useEffect(() => {
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    const userData = localStorage.getItem('user');
-    if (isLoggedIn && userData) {
-      setUser(JSON.parse(userData));
-    } else {
-      setUser(null);
-    }
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('user');
-    window.location.href = '/';
-  };
-
-  return (
-    <div className="d-flex align-items-center ms-3 bg-light border rounded-pill px-3 py-1 shadow-sm" style={{minWidth: 120, gap: 8}}>
-      {!user ? (
-        <>
-          <span className="fw-bold text-secondary">ضيف</span>
-          <a href="/login" className="btn btn-sm btn-outline-dark rounded-pill ms-2" style={{fontWeight:'bold'}}>
-            تسجيل الدخول
-          </a>
-        </>
-      ) : (
-        <>
-          <a href="/profile" className="d-flex align-items-center text-decoration-none" style={{cursor:'pointer'}}>
-            <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: 18 }}>
-              {user.name?.charAt(0) || 'U'}
-            </div>
-            <span className="ms-2 fw-bold">{user.name}</span>
-          </a>
-          <button className="btn btn-link text-danger ms-2 p-0" style={{fontWeight:'bold', fontSize:14}} onClick={handleLogout}>تسجيل الخروج</button>
-        </>
-      )}
-    </div>
-  );
-}
-
 function MainPage() {
-  // حالة المستخدم
-  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+  const user = JSON.parse(localStorage.getItem('user'));
   return (
     <div className="App" style={{ fontFamily: 'Cairo, sans-serif' }}>
       {/* Navbar */}
@@ -83,14 +39,26 @@ function MainPage() {
               <li className="nav-item">
                 <a className="nav-link" href="#contact" onClick={e => {e.preventDefault(); document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });}}>تواصل معنا</a>
               </li>
-              {!isLoggedIn && (
-                <li className="nav-item">
-                  <a className="nav-link" href="/register" onClick={e => {e.preventDefault(); window.location.href = '/register';}}>إنشاء حساب</a>
-                </li>
-              )}
             </ul>
             {/* حالة المستخدم */}
-            <UserStatus />
+            {user ? (
+              <div className="dropdown d-inline-block ms-lg-3">
+                <button className="btn btn-outline-dark rounded-pill d-flex align-items-center gap-2" type="button" id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                  <img src={'/user-tie-solid.svg'} alt="avatar" width="32" height="32" style={{borderRadius:'50%', background:'#f8f9fa', objectFit:'cover'}} />
+                  <span>{user.name}</span>
+                </button>
+                <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="profileMenu">
+                  <li><a className="dropdown-item" href="/profile">الملف الشخصي</a></li>
+                  <li><button className="dropdown-item" onClick={() => {localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.reload();}}>تسجيل الخروج</button></li>
+                </ul>
+              </div>
+            ) : (
+              <>
+                <a href="/login" className="btn btn-dark ms-lg-3 px-4 rounded-pill d-none d-lg-block" onClick={e => {e.preventDefault(); window.location.href = '/login';}}>تسجيل الدخول</a>
+                <a href="/register" className="btn btn-outline-dark ms-2 px-4 rounded-pill d-none d-lg-block" onClick={e => {e.preventDefault(); window.location.href = '/register';}}>إنشاء حساب</a>
+                <span className="ms-3 fw-bold d-none d-lg-inline">ضيف</span>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -122,27 +90,11 @@ function MainPage() {
             document.querySelector('#mobileMenu')?.classList.remove('show');
             document.body.classList.remove('offcanvas-backdrop');
           }}>تواصل معنا</button>
-          {!isLoggedIn && (
-            <>
-              <button className="btn btn-dark rounded-pill fs-5" onClick={() => {
-                window.location.href = '/login';
-                document.querySelector('#mobileMenu')?.classList.remove('show');
-                document.body.classList.remove('offcanvas-backdrop');
-              }}>تسجيل الدخول</button>
-              <button className="btn btn-outline-dark rounded-pill fs-5" onClick={() => {
-                window.location.href = '/register';
-                document.querySelector('#mobileMenu')?.classList.remove('show');
-                document.body.classList.remove('offcanvas-backdrop');
-              }}>إنشاء حساب</button>
-            </>
-          )}
-          {isLoggedIn && (
-            <button className="btn btn-outline-dark rounded-pill fs-5" onClick={() => {
-              window.location.href = '/profile';
-              document.querySelector('#mobileMenu')?.classList.remove('show');
-              document.body.classList.remove('offcanvas-backdrop');
-            }}>الملف الشخصي</button>
-          )}
+          <button className="btn btn-dark rounded-pill fs-5" onClick={() => {
+            window.location.href = '/login';
+            document.querySelector('#mobileMenu')?.classList.remove('show');
+            document.body.classList.remove('offcanvas-backdrop');
+          }}>تسجيل الدخول</button>
         </div>
       </div>
       {/* Hero Section */}

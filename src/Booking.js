@@ -70,6 +70,15 @@ function Booking() {
   }, [date, branch]);
 
   // خطوات الفورم
+  useEffect(() => {
+    // إذا كان المستخدم مسجل دخول، املأ الاسم ورقم الموبايل تلقائيًا
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user) {
+      setName(user.name);
+      // يمكن إضافة رقم الهاتف في بيانات المستخدم لاحقًا
+    }
+  }, []);
+
   return (
     <div className="d-flex align-items-center justify-content-center min-vh-100 bg-light">
       <div className="card shadow p-4" style={{minWidth: 350, borderRadius: 20, maxWidth: 420}}>
@@ -154,25 +163,17 @@ function Booking() {
             <button className="btn btn-success rounded-pill fw-bold" onClick={async () => {
               setLoadingSubmit(true);
               setError('');
+              const token = localStorage.getItem('token');
               try {
                 const res = await fetch('/api/bookings', {
                   method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
+                  headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+                  },
                   body: JSON.stringify({ name, mobile, branch, service, date: date.slice(0,10), time })
                 });
                 if (res.status === 201) {
-                  // إضافة الحجز إلى المستخدم الحالي في LocalStorage
-                  const bookingObj = { branch, service, name, mobile, date: date.slice(0,10), time };
-                  let user = JSON.parse(localStorage.getItem('user') || 'null');
-                  if (user) {
-                    user.bookings = user.bookings || [];
-                    user.bookings.push(bookingObj);
-                    localStorage.setItem('user', JSON.stringify(user));
-                    // تحديث مصفوفة users
-                    let users = JSON.parse(localStorage.getItem('users') || '[]');
-                    users = users.map(u => u.email === user.email ? user : u);
-                    localStorage.setItem('users', JSON.stringify(users));
-                  }
                   Swal.fire({
                     icon: 'success',
                     title: 'تم الحجز بنجاح!',

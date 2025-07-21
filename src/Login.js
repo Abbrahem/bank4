@@ -7,43 +7,28 @@ function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const API_URL = process.env.REACT_APP_API_URL;
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    // تحقق من بيانات الأدمن أولاً
-    if (email === 'admin@bank.com') {
-      try {
-        const res = await fetch('/api/admin/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        if (res.ok) {
-          window.location.href = '/admin';
-          return;
-        } else {
-          const data = await res.json();
-          setError(data.message || 'بيانات غير صحيحة');
-        }
-      } catch {
-        setError('تعذر الاتصال بالسيرفر');
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        // حفظ التوكن وبيانات المستخدم
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        window.location.href = '/';
+      } else {
+        setError(data.message || 'بيانات غير صحيحة');
       }
-      setLoading(false);
-      return;
+    } catch {
+      setError('تعذر الاتصال بالسيرفر');
     }
-    // تحقق من بيانات المستخدم العادي من مصفوفة users
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const user = users.find(u => u.email === email && u.password === password);
-    if (user) {
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('user', JSON.stringify(user));
-      window.location.href = '/';
-      return;
-    }
-    setError('البريد الإلكتروني أو كلمة المرور غير صحيحة');
     setLoading(false);
   };
 

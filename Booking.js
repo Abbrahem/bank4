@@ -7,6 +7,7 @@ const bookingSchema = new mongoose.Schema({
   service: { type: String, required: true },
   date: { type: String, required: true }, // YYYY-MM-DD
   time: { type: String, required: true }, // HH:mm
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // معرف المستخدم (اختياري)
   createdAt: { type: Date, default: Date.now }
 });
 

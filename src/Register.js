@@ -1,59 +1,62 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import './App.css';
 
 function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || !email || !password) {
-      setError('يرجى ملء جميع الحقول');
-      return;
+    setError('');
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        window.location.href = '/';
+      } else {
+        setError(data.message || 'حدث خطأ');
+      }
+    } catch {
+      setError('تعذر الاتصال بالسيرفر');
     }
-    // جلب المستخدمين الحاليين
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    // منع تكرار الإيميل
-    if (users.some(u => u.email === email)) {
-      setError('البريد الإلكتروني مستخدم بالفعل');
-      return;
-    }
-    // إضافة المستخدم الجديد
-    const user = { name, email, password, bookings: [] };
-    users.push(user);
-    localStorage.setItem('users', JSON.stringify(users));
-    // تسجيل الدخول تلقائيًا بعد التسجيل
-    localStorage.setItem('user', JSON.stringify(user));
-    localStorage.setItem('isLoggedIn', 'true');
-    navigate('/');
+    setLoading(false);
   };
 
   return (
-    <div className="container d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
-      <div className="card p-4 shadow" style={{ maxWidth: 400, width: '100%' }}>
-        <h2 className="mb-4 text-center">إنشاء حساب جديد</h2>
-        {error && <div className="alert alert-danger">{error}</div>}
+    <div className="d-flex align-items-center justify-content-center vh-100 bg-light">
+      <div className="card shadow p-4" style={{minWidth: 350, borderRadius: 20}}>
+        <div className="text-center mb-4">
+          <img src="/logo192.png" alt="بنك الاشتراكات" width="60" className="mb-2" />
+          <h3 className="fw-bold mb-0">إنشاء حساب جديد</h3>
+        </div>
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <label className="form-label">الاسم</label>
-            <input type="text" className="form-control" value={name} onChange={e => setName(e.target.value)} />
+            <label className="form-label fw-bold">الاسم</label>
+            <input type="text" className="form-control rounded-pill" value={name} onChange={e => setName(e.target.value)} placeholder="اسمك الثلاثي" />
           </div>
           <div className="mb-3">
-            <label className="form-label">البريد الإلكتروني</label>
-            <input type="email" className="form-control" value={email} onChange={e => setEmail(e.target.value)} />
+            <label className="form-label fw-bold">البريد الإلكتروني</label>
+            <input type="email" className="form-control rounded-pill" value={email} onChange={e => setEmail(e.target.value)} placeholder="example@email.com" />
           </div>
           <div className="mb-3">
-            <label className="form-label">كلمة المرور</label>
-            <input type="password" className="form-control" value={password} onChange={e => setPassword(e.target.value)} />
+            <label className="form-label fw-bold">كلمة المرور</label>
+            <input type="password" className="form-control rounded-pill" value={password} onChange={e => setPassword(e.target.value)} placeholder="********" />
           </div>
-          <button type="submit" className="btn btn-dark w-100">تسجيل</button>
+          {error && <div className="alert alert-danger py-1 text-center">{error}</div>}
+          <button type="submit" className="btn btn-dark w-100 rounded-pill fw-bold" disabled={loading}>
+            {loading ? 'جاري التسجيل...' : 'تسجيل'}
+          </button>
         </form>
-        <div className="mt-3 text-center">
-          لديك حساب؟ <a href="/login">سجّل الدخول</a>
-        </div>
       </div>
     </div>
   );
