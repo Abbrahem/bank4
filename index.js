@@ -69,6 +69,10 @@ app.post('/api/admin/login', async (req, res) => {
   res.json({ message: 'تم تسجيل الدخول بنجاح' });
 });
 
+app.options('*', (req, res) => {
+  res.sendStatus(200);
+});
+
 app.get('/', (req, res) => {
   res.send('Bank API is running');
 });
